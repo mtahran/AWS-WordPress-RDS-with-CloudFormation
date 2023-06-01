@@ -1,0 +1,24 @@
+### Not finished yet
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  LoadBalancer:
+    Type: 'AWS::ElasticLoadBalancing::LoadBalancer'
+    Properties:
+      Listeners:
+        - LoadBalancerPort: 80
+          InstancePort: 80
+          Protocol: HTTP
+      AvailabilityZones:
+        - !ImportValue PublicSubnet-1
+        - !ImportValue PublicSubnet-2
+      SecurityGroups:
+        - !ImportValue MySG-ELB
+      HealthCheck:
+        Target: HTTP:80/
+        HealthyThreshold: '3'
+        UnhealthyThreshold: '5'
+        Interval: '30'
+        Timeout: '5'
+Outputs:
+  LoadBalancerDNSName:
+    Value: !GetAtt LoadBalancer.DNSName
