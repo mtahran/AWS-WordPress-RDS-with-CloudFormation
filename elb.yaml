@@ -1,24 +1,70 @@
-### Not finished yet
 AWSTemplateFormatVersion: '2010-09-09'
 Resources:
-  LoadBalancer:
+  MyELBSg:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: new security group for ELB
+      VpcId: !ImportValue MyVPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+      - IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+      SecurityGroupEgress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: "0.0.0.0/0"
+      Tags:
+      - Key: Name
+        Value: MySG-ELB
+      - Key: Purpose
+        Value: ELB
+  MyTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: MyTargetGroup
+      Port: 80
+      Protocol: HTTP
+   ##   VpcId: !ImportValue EC2InstanceId
+  MyLoadBalancer:
     Type: 'AWS::ElasticLoadBalancing::LoadBalancer'
     Properties:
       Listeners:
-        - LoadBalancerPort: 80
-          InstancePort: 80
-          Protocol: HTTP
-      AvailabilityZones:
-        - !ImportValue PublicSubnet-1
-        - !ImportValue PublicSubnet-2
-      SecurityGroups:
-        - !ImportValue MySG-ELB
+      - InstancePort: '80'
+        InstanceProtocol: HTTP
+        LoadBalancerPort: '443'
+        Protocol: HTTPS
+      SecurityGroups: !Ref MyELBSg
       HealthCheck:
         Target: HTTP:80/
         HealthyThreshold: '3'
         UnhealthyThreshold: '5'
         Interval: '30'
         Timeout: '5'
+      IpAddressType: ipv4
+      Scheme: internet-facing
+      Certificates:
+        - CertificateArn: !Ref MyCertificate
+  MyCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: mustafatahran.net
+      ValidationMethod: DNS
+      Tags:
+        - Key: Name
+          Value: MyCertificate
+  MyListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref MyLoadBalancer
+      Port: 80
+      Protocol: HTTP
+      Certificates:
+        - CertificateArn: !Ref MyCertificate
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref MyTargetGroup
 Outputs:
-  LoadBalancerDNSName:
-    Value: !GetAtt LoadBalancer.DNSName

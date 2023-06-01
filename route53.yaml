@@ -11,8 +11,8 @@ Resources:
     Type: 'AWS::Route53::RecordSet'
     Properties:
       HostedZoneId: !Ref HostedZone
-      Name: example.com
+      Name: app.mustafatahran.net
       Type: A
       TTL: '300'
       ResourceRecords:
-        - 192.0.2.1
+   ###     - !ImportValue EC2InstanceId

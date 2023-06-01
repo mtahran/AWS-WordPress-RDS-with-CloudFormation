@@ -125,6 +125,10 @@ Resources:
       InternetGatewayId: !Ref MyIGW
 
 Outputs:
+  MyVPC:
+    Value: !Ref MyVPC
+    Export:
+      Name: MyVPC
   MySGRDS:
     Value: !Ref MySGRDS
     Export:
@@ -141,3 +145,11 @@ Outputs:
     Value: !Ref PublicSubnet1
     Export:
       Name: PublicSubnet1
+  PrivateSubnet2:
+    Value: !Ref PrivateSubnet2
+    Export:
+      Name: PrivateSubnet2
+  PublicSubnet2:
+    Value: !Ref PublicSubnet2
+    Export:
+      Name: PublicSubnet2
