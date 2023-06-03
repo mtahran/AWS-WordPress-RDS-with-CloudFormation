@@ -24,8 +24,8 @@ Resources:
       AllocatedStorage: 20
       Engine: MariaDB
       DBInstanceIdentifier: MyDBInstance
-      MasterUsername: 
-      MasterUserPassword: 
+      MasterUsername: ???????? 
+      MasterUserPassword: ????????? 
       DBInstanceClass: db.t2.micro
       VPCSecurityGroups:
         - !ImportValue MySGRDS
