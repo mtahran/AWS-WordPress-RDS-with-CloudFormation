@@ -69,9 +69,11 @@ Resources:
       - IpProtocol: tcp
         FromPort: 80
         ToPort: 80
+        CidrIp: "0.0.0.0/0"
       - IpProtocol: tcp
         FromPort: 22
         ToPort: 22
+        CidrIp: "0.0.0.0/0"
       SecurityGroupEgress:
       - IpProtocol: tcp
         FromPort: 80
@@ -99,10 +101,14 @@ Resources:
         CidrIp: "10.0.0.0/25"
       Tags:
       - Key: Name
-        Value: MySG-WP
+        Value: MySG-RDS
       - Key: Purpose
         Value: RDS
   PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref MyVPC
+  PublicRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref MyVPC
@@ -116,6 +122,11 @@ Resources:
     Properties:
       RouteTableId: !Ref PrivateRouteTable
       SubnetId: !Ref PrivateSubnet2
+  PublicSubnetRouteTableAssociation1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet1
   MyIGW:
     Type: AWS::EC2::InternetGateway
   VPCGatewayAttachment:
@@ -123,6 +134,13 @@ Resources:
     Properties:
       VpcId: !Ref MyVPC
       InternetGatewayId: !Ref MyIGW
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref MyIGW
 
 Outputs:
   MyVPC:
