@@ -79,9 +79,7 @@ Resources:
         ToPort: 22
         CidrIp: "0.0.0.0/0"
       SecurityGroupEgress:
-      - IpProtocol: all
-        FromPort: all
-        ToPort: all
+      - IpProtocol: -1
         CidrIp: "0.0.0.0/0"
       Tags:
       - Key: Name

@@ -13,7 +13,7 @@ Resources:
   EC2Instance:
     Type: 'AWS::EC2::Instance'
     Properties:
-      ImageId: ami-0ab193018f3e9351b #ami-0715c1897453cabd1
+      ImageId: ami-0715c1897453cabd1  #ami-0ab193018f3e9351b
       InstanceType: t2.micro
       KeyName: macbook@400048mbp
       SubnetId: !ImportValue PublicSubnet1

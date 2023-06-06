@@ -14,14 +14,14 @@ Parameters:
     Type: String
     MinLength: 5
     MaxLength: 25
-    AllowedPattern: "^[a-zA-Z][-a-zA-Z0-9]*$"
+    AllowedPattern: "[a-zA-Z][a-zA-Z0-9]*$"
     Default: masterusername
   MasterUserPassword:
     Description: Write the password for your Database
     Type: String
     MinLength: 5
     MaxLength: 25
-    AllowedPattern: "^[a-zA-Z][-a-zA-Z0-9]*$"
+    AllowedPattern: "[a-zA-Z][a-zA-Z0-9]*$"
     Default: masterpassword
 Resources:
   DBSubnetGroup:
