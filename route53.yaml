@@ -11,4 +11,5 @@ Resources:
       Name: app.mustafatahran.net
       Type: A
       TTL: '300'
-      ResourceRecords: !ImportValue EC2InstanceId
+      ResourceRecords: 
+        - !ImportValue EC2InstanceId

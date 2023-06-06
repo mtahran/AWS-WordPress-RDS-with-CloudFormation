@@ -9,6 +9,20 @@ Parameters:
     MaxLength: 255
     AllowedPattern: "^[a-zA-Z][-a-zA-Z0-9]*$"
     Default: SampleNetworkCrossStack
+  MasterUsername:
+    Description: Write the username for your Database
+    Type: String
+    MinLength: 5
+    MaxLength: 25
+    AllowedPattern: "^[a-zA-Z][-a-zA-Z0-9]*$"
+    Default: masterusername
+  MasterUserPassword:
+    Description: Write the password for your Database
+    Type: String
+    MinLength: 5
+    MaxLength: 25
+    AllowedPattern: "^[a-zA-Z][-a-zA-Z0-9]*$"
+    Default: masterpassword
 Resources:
   DBSubnetGroup:
     Type: 'AWS::RDS::DBSubnetGroup'
@@ -24,8 +38,8 @@ Resources:
       AllocatedStorage: 20
       Engine: MariaDB
       DBInstanceIdentifier: MyDBInstance
-      MasterUsername: ???????? 
-      MasterUserPassword: ????????? 
+      MasterUsername: !Ref MasterUsername
+      MasterUserPassword: !Ref MasterUserPassword
       DBInstanceClass: db.t2.micro
       VPCSecurityGroups:
         - !ImportValue MySGRDS

@@ -1,4 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
+Description: "It creates an AWS ELB for WordPress/RDS Project"
 Resources:
   MyELBSg:
     Type: AWS::EC2::SecurityGroup
@@ -10,10 +11,14 @@ Resources:
         FromPort: 80
         ToPort: 80
         CidrIp: "0.0.0.0/0"
+      - IpProtocol: tcp
+        FromPort: 443
+        ToPort: 443
+        CidrIp: "0.0.0.0/0"
       SecurityGroupEgress:
       - IpProtocol: tcp
-        FromPort: 80
-        ToPort: 80
+        FromPort: all
+        ToPort: all
         CidrIp: "0.0.0.0/0"
       Tags:
       - Key: Name

@@ -13,7 +13,7 @@ Resources:
   EC2Instance:
     Type: 'AWS::EC2::Instance'
     Properties:
-      ImageId: ami-0715c1897453cabd1
+      ImageId: ami-0ab193018f3e9351b #ami-0715c1897453cabd1
       InstanceType: t2.micro
       KeyName: macbook@400048mbp
       SubnetId: !ImportValue PublicSubnet1
@@ -26,12 +26,12 @@ Resources:
           sudo dnf install -y httpd php
           sudo systemctl enable httpd
           sudo systemctl start httpd
-          sudo cd /var/www/html
+          cd /var/www/html
           sudo wget https://wordpress.org/latest.tar.gz
           sudo tar -xzvf latest.tar.gz
           sudo cp -R wordpress/* .
           sudo rm -rf wordpress latest.tar.gz
-          sudo chown -R www-data:www-data *
+          sudo chown -R apache:apache *
           sudo chmod -R 755 wp-content
 Outputs:
   InstanceId:

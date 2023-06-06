@@ -71,13 +71,17 @@ Resources:
         ToPort: 80
         CidrIp: "0.0.0.0/0"
       - IpProtocol: tcp
+        FromPort: 443
+        ToPort: 443
+        CidrIp: "0.0.0.0/0"
+      - IpProtocol: tcp
         FromPort: 22
         ToPort: 22
         CidrIp: "0.0.0.0/0"
       SecurityGroupEgress:
-      - IpProtocol: tcp
-        FromPort: 80
-        ToPort: 80
+      - IpProtocol: all
+        FromPort: all
+        ToPort: all
         CidrIp: "0.0.0.0/0"
       Tags:
       - Key: Name
@@ -127,8 +131,17 @@ Resources:
     Properties:
       RouteTableId: !Ref PublicRouteTable
       SubnetId: !Ref PublicSubnet1
+  PublicSubnetRouteTableAssociation2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet2
   MyIGW:
     Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value: MyIGW
   VPCGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
@@ -136,38 +149,44 @@ Resources:
       InternetGatewayId: !Ref MyIGW
   PublicRoute:
     Type: AWS::EC2::Route
-    DependsOn: InternetGatewayAttachment
     Properties:
       RouteTableId: !Ref PublicRouteTable
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref MyIGW
 
 Outputs:
-  MyVPC:
+  MyVPC: 
+    Description: The VPC created for WordPress and RDS project.
     Value: !Ref MyVPC
     Export:
       Name: MyVPC
   MySGRDS:
+    Description: the Security Group created for RDS 
     Value: !Ref MySGRDS
     Export:
       Name: MySGRDS
   MySGWP:
+    Description: the Security Group created for the instance hosting WordPress
     Value: !Ref MySGWP
     Export:
       Name: MySGWP
   PrivateSubnet1:
+    Description: the Private Subnet hosting RDS
     Value: !Ref PrivateSubnet1
     Export:
       Name: PrivateSubnet1
-  PublicSubnet1:
+  PublicSubnet1: 
+    Description: the Public Subnet hosting WordPress
     Value: !Ref PublicSubnet1
     Export:
       Name: PublicSubnet1
   PrivateSubnet2:
+    Description: the Private Subnet hosting RDS
     Value: !Ref PrivateSubnet2
     Export:
       Name: PrivateSubnet2
   PublicSubnet2:
+    Description: the Public Subnet hosting WordPress
     Value: !Ref PublicSubnet2
     Export:
       Name: PublicSubnet2
