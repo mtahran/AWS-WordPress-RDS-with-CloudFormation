@@ -1,6 +1,7 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: A Network Template for WordPress and RDS Project
 Resources:  
+  
   MyVPC:
     Type: AWS::EC2::VPC
     Properties:
@@ -12,6 +13,7 @@ Resources:
           Value: MyVPC
         - Key: Purpose
           Value: WP/RDS
+  
   PublicSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
@@ -24,6 +26,7 @@ Resources:
           Value: PublicSubnet1
         - Key: Purpose
           Value: WP/RDS
+  
   PublicSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
@@ -36,6 +39,7 @@ Resources:
           Value: PublicSubnet2
         - Key: Purpose
           Value: WP/RDS
+  
   PrivateSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
@@ -48,6 +52,7 @@ Resources:
           Value: PrivateSubnet1
         - Key: Purpose
           Value: WP/RDS
+  
   PrivateSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
@@ -60,24 +65,26 @@ Resources:
           Value: PrivateSubnet2
         - Key: Purpose
           Value: WP/RDS
+  
+# EC2 Instance Security Group
   MySGWP:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: new security group for EC2 with WordPress
       VpcId: !Ref MyVPC
       SecurityGroupIngress:
-      - IpProtocol: tcp
+      - IpProtocol: tcp     # Needed for connecting to Load Balancer.
         FromPort: 80
         ToPort: 80
-        CidrIp: "0.0.0.0/0"
-      - IpProtocol: tcp
-        FromPort: 443
-        ToPort: 443
-        CidrIp: "0.0.0.0/0"
-      - IpProtocol: tcp
+        SourceSecurityGroupId: !Ref MyELBSg
+      - IpProtocol: tcp     # Needed for entering into Instance by SSH.
         FromPort: 22
         ToPort: 22
         CidrIp: "0.0.0.0/0"
+      - IpProtocol: tcp     # Needed for the update of EC2 Instance on internet.
+        FromPort: 443
+        ToPort: 443
+        CidrIp: "0.0.0.0/0"  
       SecurityGroupEgress:
       - IpProtocol: -1
         CidrIp: "0.0.0.0/0"
@@ -86,6 +93,8 @@ Resources:
         Value: MySG-WP
       - Key: Purpose
         Value: WP
+  
+# RDS Security Group  
   MySGRDS:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -95,56 +104,66 @@ Resources:
       - IpProtocol: tcp
         FromPort: 3306
         ToPort: 3306
-        CidrIp: "10.0.0.0/25"
+        SourceSecurityGroupId: !Ref MySGWP    # Needed for connecting to EC2 Instance.
       SecurityGroupEgress:
-      - IpProtocol: tcp
-        FromPort: 3306
-        ToPort: 3306
-        CidrIp: "10.0.0.0/25"
+      - IpProtocol: -1
+        CidrIp: "10.0.0.0/0" 
       Tags:
       - Key: Name
         Value: MySG-RDS
       - Key: Purpose
         Value: RDS
-  PrivateRouteTable:
-    Type: AWS::EC2::RouteTable
+
+# Elastic Load Balancer Security Group
+  MyELBSg:
+    Type: AWS::EC2::SecurityGroup
     Properties:
+      GroupDescription: new security group for ELB
       VpcId: !Ref MyVPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 443
+        ToPort: 443
+        CidrIp: "0.0.0.0/0"
+      SecurityGroupEgress:
+      - IpProtocol: -1
+        CidrIp: "0.0.0.0/0"
+      Tags:
+      - Key: Name
+        Value: MySG-ELB
+      - Key: Purpose
+        Value: ELB
+
   PublicRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref MyVPC
-  PrivateSubnetRouteTableAssociation1:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      RouteTableId: !Ref PrivateRouteTable
-      SubnetId: !Ref PrivateSubnet1
-  PrivateSubnetRouteTableAssociation2:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      RouteTableId: !Ref PrivateRouteTable
-      SubnetId: !Ref PrivateSubnet2
+  
   PublicSubnetRouteTableAssociation1:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       RouteTableId: !Ref PublicRouteTable
       SubnetId: !Ref PublicSubnet1
+  
   PublicSubnetRouteTableAssociation2:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       RouteTableId: !Ref PublicRouteTable
       SubnetId: !Ref PublicSubnet2
+  
   MyIGW:
     Type: AWS::EC2::InternetGateway
     Properties:
       Tags:
       - Key: Name
         Value: MyIGW
+  
   VPCGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
       VpcId: !Ref MyVPC
       InternetGatewayId: !Ref MyIGW
+  
   PublicRoute:
     Type: AWS::EC2::Route
     Properties:
@@ -168,6 +187,11 @@ Outputs:
     Value: !Ref MySGWP
     Export:
       Name: MySGWP
+  MyELBSg:
+    Description: the Security Group created for the Elastic Load Balancer
+    Value: !Ref MyELBSg
+    Export:
+      Name: MyELBSg
   PrivateSubnet1:
     Description: the Private Subnet hosting RDS
     Value: !Ref PrivateSubnet1
@@ -183,8 +207,3 @@ Outputs:
     Value: !Ref PrivateSubnet2
     Export:
       Name: PrivateSubnet2
-  PublicSubnet2:
-    Description: the Public Subnet hosting WordPress
-    Value: !Ref PublicSubnet2
-    Export:
-      Name: PublicSubnet2

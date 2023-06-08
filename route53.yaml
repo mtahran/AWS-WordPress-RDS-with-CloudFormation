@@ -1,15 +1,3 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Resources:
-  HostedZone:
-    Type: 'AWS::Route53::HostedZone'
-    Properties:
-      Name: mustafatahran.net
-  RecordSet:
-    Type: 'AWS::Route53::RecordSet'
-    Properties:
-      HostedZoneId: !Ref HostedZone
-      Name: app.mustafatahran.net
-      Type: A
-      TTL: '300'
-      ResourceRecords: 
-        - !ImportValue EC2InstanceId
+

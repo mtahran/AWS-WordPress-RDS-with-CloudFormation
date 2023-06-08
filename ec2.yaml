@@ -1,19 +1,12 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Creates an EC2 with Apache, PHP and WP
-Parameters:
-  NetworkStackName:
-    Description: Name the active CloudFormation stack that contains the networking
-      resources that will be used in this stack.
-    Type: String
-    MinLength: 1
-    MaxLength: 255
-    AllowedPattern: "^[a-zA-Z][-a-zA-Z0-9]*$"
-    Default: SampleNetworkCrossStack
+
 Resources:
+
   EC2Instance:
     Type: 'AWS::EC2::Instance'
     Properties:
-      ImageId: ami-0715c1897453cabd1  #ami-0ab193018f3e9351b
+      ImageId: ami-0ab193018f3e9351b  #ami-0715c1897453cabd1
       InstanceType: t2.micro
       KeyName: macbook@400048mbp
       SubnetId: !ImportValue PublicSubnet1
@@ -22,17 +15,17 @@ Resources:
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash -xe
-          sudo dnf update -y
-          sudo dnf install -y httpd php
-          sudo systemctl enable httpd
-          sudo systemctl start httpd
+          dnf update -y
+          dnf install -y mysql php-mysqlnd httpd php-fpm php-mysqli mariadb105-server php-json php php-devel
+          systemctl enable httpd
+          systemctl start httpd
           cd /var/www/html
-          sudo wget https://wordpress.org/latest.tar.gz
-          sudo tar -xzvf latest.tar.gz
-          sudo cp -R wordpress/* .
-          sudo rm -rf wordpress latest.tar.gz
-          sudo chown -R apache:apache *
-          sudo chmod -R 755 wp-content
+          wget https://wordpress.org/latest.tar.gz
+          tar -xzvf latest.tar.gz
+          cp -R wordpress/* .
+          rm -rf wordpress latest.tar.gz
+          chown -R apache:apache *
+          chmod -R 755 wp-content
 Outputs:
   InstanceId:
     Value: !Ref EC2Instance

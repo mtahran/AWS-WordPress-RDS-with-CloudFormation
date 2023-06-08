@@ -1,14 +1,8 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: "It creates an AWS RDS database"
+
 Parameters:
-  NetworkStackName:
-    Description: Name the active CloudFormation stack that contains the networking
-      resources that will be used in this stack.
-    Type: String
-    MinLength: 1
-    MaxLength: 255
-    AllowedPattern: "^[a-zA-Z][-a-zA-Z0-9]*$"
-    Default: SampleNetworkCrossStack
+  
   MasterUsername:
     Description: Write the username for your Database
     Type: String
@@ -16,6 +10,7 @@ Parameters:
     MaxLength: 25
     AllowedPattern: "[a-zA-Z][a-zA-Z0-9]*$"
     Default: masterusername
+  
   MasterUserPassword:
     Description: Write the password for your Database
     Type: String
@@ -23,7 +18,9 @@ Parameters:
     MaxLength: 25
     AllowedPattern: "[a-zA-Z][a-zA-Z0-9]*$"
     Default: masterpassword
+
 Resources:
+
   DBSubnetGroup:
     Type: 'AWS::RDS::DBSubnetGroup'
     Properties:
@@ -32,6 +29,7 @@ Resources:
       SubnetIds:
         - !ImportValue PrivateSubnet1
         - !ImportValue PrivateSubnet2
+
   RdsInstance:
     Type: 'AWS::RDS::DBInstance'
     Properties:

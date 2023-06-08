@@ -1,35 +1,31 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: "It creates an AWS ELB for WordPress/RDS Project"
+
+Parameters:
+  
+  Certificates:
+    Description: Enter your certificate ARN here to create listeners.
+    Type: String
+    MinLength: 1
+    MaxLength: 255
+    Default: CertificatesArn
+  
+  HostedZoneId:
+    Description: Enter your Hosted Zone ID here to create Route 53 record.
+    Type: String
+    MinLength: 1
+    MaxLength: 255
+    Default: HostedZoneId
+
+  Subdomain:
+    Description: Enter the subdomain name.
+    Type: String
+    MinLength: 1
+    MaxLength: 255
+    Default: subdomain.example.com
+
 Resources:
-  MyELBSg:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: new security group for ELB
-      VpcId: !ImportValue MyVPC
-      SecurityGroupIngress:
-      - IpProtocol: tcp
-        FromPort: 80
-        ToPort: 80
-        CidrIp: "0.0.0.0/0"
-      - IpProtocol: tcp
-        FromPort: 443
-        ToPort: 443
-        CidrIp: "0.0.0.0/0"
-      SecurityGroupEgress:
-      - IpProtocol: -1
-        CidrIp: "0.0.0.0/0"
-      Tags:
-      - Key: Name
-        Value: MySG-ELB
-      - Key: Purpose
-        Value: ELB
-  MyTargetGroup:
-    Type: AWS::ElasticLoadBalancingV2::TargetGroup
-    Properties:
-      Name: MyTargetGroup
-      Port: 80
-      Protocol: HTTP
-      VpcId: !ImportValue MyVPC
+  
   MyLoadBalancer:
     Type: 'AWS::ElasticLoadBalancing::LoadBalancer'
     Properties:
@@ -38,34 +34,24 @@ Resources:
         InstanceProtocol: HTTP
         LoadBalancerPort: '443'
         Protocol: HTTPS
-      SecurityGroups: !Ref MyELBSg
+        SSLCertificateId: !Ref Certificates
+      SecurityGroups: 
+        - !ImportValue MyELBSg
       HealthCheck:
         Target: HTTP:80/
         HealthyThreshold: '3'
         UnhealthyThreshold: '5'
         Interval: '30'
         Timeout: '5'
-      Subnets: !ImportValue PublicSubnet1
-      IpAddressType: ipv4
+      Subnets: 
+        - !ImportValue PublicSubnet1
       Scheme: internet-facing
-      Certificates:
-        - CertificateArn: !Ref MyCertificate
-  MyCertificate:
-    Type: AWS::CertificateManager::Certificate
+
+# Route 53 Record Set to sent traffic to ELB.
+  RecordSet:
+    Type: 'AWS::Route53::RecordSet'
     Properties:
-      DomainName: mustafatahran.net
-      ValidationMethod: DNS
-      Tags:
-        - Key: Name
-          Value: MyCertificate
-  MyListener:
-    Type: AWS::ElasticLoadBalancingV2::Listener
-    Properties:
-      LoadBalancerArn: !Ref MyLoadBalancer
-      Port: 80
-      Protocol: HTTP
-      Certificates:
-        - CertificateArn: !Ref MyCertificate
-      DefaultActions:
-        - Type: forward
-          TargetGroupArn: !Ref MyTargetGroup
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Ref Subdomain
+      Type: A
+      TTL: '300'
