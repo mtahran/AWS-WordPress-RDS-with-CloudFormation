@@ -27,31 +27,62 @@ Parameters:
 Resources:
   
   MyLoadBalancer:
-    Type: 'AWS::ElasticLoadBalancing::LoadBalancer'
+    Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
     Properties:
-      Listeners:
-      - InstancePort: '80'
-        InstanceProtocol: HTTP
-        LoadBalancerPort: '443'
-        Protocol: HTTPS
-        SSLCertificateId: !Ref Certificates
+      Name: MyLoadBalancer
       SecurityGroups: 
         - !ImportValue MyELBSg
-      HealthCheck:
-        Target: HTTP:80/
-        HealthyThreshold: '3'
-        UnhealthyThreshold: '5'
-        Interval: '30'
-        Timeout: '5'
       Subnets: 
         - !ImportValue PublicSubnet1
+        - !ImportValue PublicSubnet2
       Scheme: internet-facing
+      Type: application
+  
+  ELBTargetG:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties: 
+      HealthCheckEnabled: 1
+      HealthCheckIntervalSeconds: 20
+      HealthCheckTimeoutSeconds: 20
+      Name: ELBTargetG
+      Port: 80
+      Protocol: 'HTTP'
+      Targets: 
+        - Id: !ImportValue EC2InstanceId
+        - Port: 80
+      TargetType: instance
+      UnhealthyThresholdCount: 5
+      VpcId: !ImportValue MyVPC
+
+  MyELB443Listener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      Certificates: 
+        - !Ref Certificates
+      DefaultActions: 
+        - Type: forward
+          TargetGroupArn: !Ref ELBTargetG
+      LoadBalancerArn: !Ref MyLoadBalancer
+      Port: 443
+      Protocol: HTTPS
+  
+  MyELB80Listener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions: 
+        - Type: forward
+          TargetGroupArn: !Ref ELBTargetG
+      LoadBalancerArn: !Ref MyLoadBalancer
+      Port: 80
+      Protocol: HTTP
 
 # Route 53 Record Set to sent traffic to ELB.
   RecordSet:
     Type: 'AWS::Route53::RecordSet'
     Properties:
-      HostedZoneId: !Ref HostedZoneId
+      AliasTarget: 
+        - DNSName: !Ref MyLoadBalancer
+          HostedZoneId: !Ref HostedZoneId
       Name: !Ref Subdomain
       Type: A
       TTL: '300'

@@ -1,14 +1,29 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Creates an EC2 with Apache, PHP and WP
 
+Parameters: 
+  ImageId: 
+    Description: "EC2 Image ID"
+    Type: String
+  SSHKeyName: 
+    Description: "SSH Key Name"
+    Type: String
+  InstanceType: 
+    Description: Select an Instance Type
+    Type: String 
+    Default: t2.micro 
+    AllowedValues: 
+      - t2.micro
+      - t2.medium
+
 Resources:
 
   EC2Instance:
     Type: 'AWS::EC2::Instance'
     Properties:
-      ImageId: ami-0ab193018f3e9351b  #ami-0715c1897453cabd1
-      InstanceType: t2.micro
-      KeyName: macbook@400048mbp
+      ImageId: !Ref ImageId
+      InstanceType: !Ref ImageId
+      KeyName: !Ref SSHKeyName
       SubnetId: !ImportValue PublicSubnet1
       SecurityGroupIds:
         - !ImportValue MySGWP
@@ -16,7 +31,7 @@ Resources:
         Fn::Base64: !Sub |
           #!/bin/bash -xe
           dnf update -y
-          dnf install -y mysql php-mysqlnd httpd php-fpm php-mysqli mariadb105-server php-json php php-devel
+          dnf install wget php-mysqlnd httpd php-fpm php-mysqli php-json php php-devel -y
           systemctl enable httpd
           systemctl start httpd
           cd /var/www/html
